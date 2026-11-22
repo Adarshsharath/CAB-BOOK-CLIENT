@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Your trip estimate{% endblock %}
+{% block body %}
+<section class="inner quote-page">
+  <a class="back-link" href="/#booking">‹ Edit trip</a>
+  <div class="quote-heading"><p class="eyebrow">YOUR TRIP ESTIMATE</p><h1>Choose a cab</h1></div>
+  <section class="journey">
+    <div class="journey-info">
+      <div class="journey-type">{{q.trip}}</div>
+      <div class="stops">
+        <div><small>Pickup</small><strong>{{q.pickup}}</strong></div>
+        <div><small>Destination</small><strong>{{q.drop}}</strong></div>
+      </div>
+      <p>{{q.start|localtime}}</p>
+    </div>
+    <div class="route-view">
+      <div class="route-numbers"><strong>{{q.km}} <small>km</small></strong><span>{{q.minutes}} min driving</span></div>
+      <svg id="road-trace" viewBox="0 0 440 156" role="img" aria-label="Driving route between pickup and destination" data-line='{{q.line|tojson}}'></svg>
+      <div class="map-credit"><a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a><a href="https://www.google.com/maps/dir/?api=1&origin={{q.origin|urlencode}}&destination={{q.destination|urlencode}}" target="_blank" rel="noopener">Driving map ↗</a></div>
+    </div>
+  </section>
+  {% if q.offers %}
+  <form action="/book" method="post" class="checkout">
+    <input type="hidden" name="csrf" value="{{session.csrf}}"><input type="hidden" name="token" value="{{token}}">
+    <section class="panel vehicle-panel">
+      <h2>Available vehicles</h2>
+      <label class="fuel-filter">Filter by fuel<select id="fuel"><option>All fuels</option>{% for fuel in q.offers|map(attribute='fuel')|unique %}<option>{{fuel}}</option>{% endfor %}</select></label>
+      {% for c in q.offers %}
+      <label class="offer" data-fuel="{{c.fuel}}">
+        <input type="radio" name="car" value="{{c.id}}" required {% if loop.first %}checked{% endif %}>
+        <span><strong>{{c.name}}</strong> · {{c.fuel}}<small>{{c.seats}} seats · ₹{{c.base}} base + ₹{{c.rate}}/km · ₹{{c.minimum}} minimum</small></span>
+        <b>₹{{'%.2f'|format(c.total)}}</b>
+      </label>
+      {% endfor %}
+      <p class="quote-note">Tolls and parking are extra at actual cost. Quote valid for 15 minutes.</p>
+    </section>
+    <section class="panel passenger-panel">
+      <h2>Passenger details</h2>
+      <div class="stack">
+        <label>Full name<input required minlength="2" maxlength="100" name="name" autocomplete="name"></label>
+        <label>Indian mobile number<input required type="tel" pattern="[6-9][0-9]{9}" name="phone" placeholder="10 digits" autocomplete="tel-national"></label>
+        <label>Email<input required type="email" name="email" autocomplete="email"></label>
+        <button>Request booking</button>
+      </div>
+      <p class="quote-note">Your operator will review this request.</p>
+    </section>
+  </form>
+  {% else %}
+    <div class="panel">No cabs are available for this window. <a href="/#booking">Choose another pickup time</a></div>
+  {% endif %}
+</section>
+{% endblock %}

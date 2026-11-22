@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block head %}
+<link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
+<script defer src="/static/vendor/leaflet/leaflet.js"></script>
+<script defer src="/static/location-picker.js"></script>
+{% endblock %}
+{% block body %}<section class="hero"><div><p class="kicker"><span></span> BENGALURU CAB SERVICE</p><h1>The road is<br><em>yours.</em></h1><p>From airport pickups to weekend escapes,<br>find the right cab for your journey.</p></div><small>WESTERN GHATS, KARNATAKA</small></section><section id="booking" class="booking panel"><div class="heading"><div><div class="eyebrow">PLAN YOUR JOURNEY</div><h2>Where are we headed?</h2></div><span class="meta">Pickup times in IST</span></div><form action="/quotes" method="post"><input type="hidden" name="csrf" value="{{session.csrf}}"><div class="tabs">{% for t in ['One way','Round trip','Airport'] %}<label><input type="radio" name="trip" value="{{t}}" {% if loop.first %}checked{% endif %}><span>{{t}}</span></label>{% endfor %}</div><div class="fields"><label>Pickup location<input required name="pickup" list="places" placeholder="City, airport or landmark" maxlength="180"></label><label>Drop location<input required name="drop" list="places" placeholder="Where to?" maxlength="180"></label><label>Pickup date<input required type="date" min="{{today}}" name="date"></label><label>Pickup time<input required type="time" name="time"></label><label id="return" hidden>Return trip ends<input type="datetime-local" name="return_time"></label></div><details id="pin-picker" hidden open>
+  <summary>Choose locations on the map</summary>
+  <div class="pin-tools" aria-label="Location to set">
+    <button type="button" data-endpoint="pickup" aria-pressed="true">Pickup</button>
+    <button type="button" data-endpoint="drop" aria-pressed="false">Destination</button>
+    <button type="button" id="pin-center">Use map centre</button>
+  </div>
+  <p id="pin-status" role="status">Tap the map to set your pickup, then your destination.</p>
+  <div id="booking-map" role="region" aria-label="Choose pickup and destination on the map" aria-describedby="pin-status"></div>
+  <p id="tile-message" hidden>Street tiles could not load. You can still enter an address above.</p>
+  <script id="known-places" type="application/json">{{places|tojson}}</script>
+</details>
+<datalist id="places">{% for p in places %}<option value="{{p}}">{% endfor %}</datalist><div class="formfoot"><span>Review the route and fare before you book.</span><button type="submit">Find available cabs</button></div></form></section><section class="wide"><div class="eyebrow">FROM BENGALURU</div><h2>Popular routes</h2><div class="routes">{% for dest,kind,tag in [('Mysuru Palace','Mysuru','Heritage escape'),('Madikeri Town Centre','Coorg','Hill country'),('Kempegowda International Airport','Airport','Airport transfer')] %}<button class="route" data-dest="{{dest}}"><span>{{tag}}</span><strong>{{kind}}</strong><small>Plan this ride ↗</small></button>{% endfor %}</div></section><section id="fleet" class="wide"><div class="eyebrow">OUR FLEET</div><h2>Choose your ride</h2><div class="fleet">{% for c in cars %}<article><span class="pill">{{c.fuel}}</span><h3>{{c.name}}</h3><p>{{c.seats}} passengers · ₹{{'%g'|format(c.rate)}} / km</p></article>{% endfor %}</div></section>{% endblock %}
